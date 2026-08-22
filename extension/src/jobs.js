@@ -103,7 +103,11 @@ export function buildJobs({ tripsBySegment, nseCodes, mcxCodes, startAfter, majo
   for (const [key, ts] of groups) {
     const [und, series, seg] = key.split('|');
     const pnl = ts.reduce((s, t) => s + t.pnl, 0);
-    if (Math.abs(pnl) <= majorThreshold) continue;
+    // majorThreshold 0 means no filtering at all -- every round-trip is logged,
+    // including exact-zero P&L. Traders with smaller capital have most of their
+    // trades below any fixed cut-off, so a threshold would silently hide their
+    // journal from them.
+    if (majorThreshold > 0 && Math.abs(pnl) <= majorThreshold) continue;
 
     const scrip = SCRIP_OVERRIDES[und] || und;
     const valid = seg === 'Commodity' ? mcxCodes : nseCodes;

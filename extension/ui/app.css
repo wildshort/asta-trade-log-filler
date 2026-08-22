@@ -666,3 +666,80 @@ progress::-webkit-progress-value { background: var(--accent); border-radius: 8px
 }
 
 [hidden] { display: none !important; }
+
+/* ---------- Danger zone (wipe entire journal -- local demo use only) ----------
+   Deliberately far from the wizard's Preview/Write buttons (it is appended
+   after the footer, outside <main>) and visually unlike every other control
+   on the page, so it cannot be hit by muscle memory while doing an ordinary
+   fill. See extension/ui/wipe-ui.js. */
+
+.danger-zone {
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border-strong);
+}
+
+.wipe-open-btn {
+  background: transparent;
+  border: 1px dashed color-mix(in srgb, var(--danger) 45%, transparent);
+  color: var(--danger);
+  font-size: 12px;
+  padding: 8px 12px;
+  opacity: 0.75;
+}
+.wipe-open-btn:hover { opacity: 1; }
+.wipe-open-icon { font-size: 13px; }
+
+.wipe-panel {
+  margin-top: 14px;
+  padding: 20px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+  background: var(--danger-soft);
+}
+
+.wipe-heading {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+.wipe-hint {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.wipe-status { font-size: 13px; color: var(--ink-soft); }
+
+.wipe-summary p { margin: 0 0 12px; font-size: 13.5px; }
+
+.wipe-confirm-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.wipe-confirm-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.wipe-confirm-input {
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-raised);
+  color: var(--ink);
+  max-width: 260px;
+}
+.wipe-confirm-input:focus {
+  outline: none;
+  border-color: var(--danger);
+}

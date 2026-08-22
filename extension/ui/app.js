@@ -18,7 +18,9 @@ import { ChromeStore } from '../src/checkpoint.js';
 // finger can't silently change what counts as "major" or how far back the
 // backfill reaches.
 const START_AFTER = '2020-01-01';
-const MAJOR_THRESHOLD = 10000;
+// 0 = log every trade, whatever its size. Do not reintroduce a cut-off: it
+// silently drops the majority of trades for anyone trading smaller size.
+const MAJOR_THRESHOLD = 0;
 
 const $ = (id) => document.getElementById(id);
 
@@ -524,6 +526,7 @@ $('restart').addEventListener('click', () => {
   hideFilesError();
   goToStep('files');
 });
+
 
 // Initial state.
 refreshPreviewEnabled();

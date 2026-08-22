@@ -70,6 +70,8 @@ tab; both need to be open at the same time.
 
 ### Things worth knowing
 
+- **Every trade is logged, whatever its size.** There is no minimum P&L cut-off.
+
 - **Your ASTA session expires after about 35 minutes.** A long run may outlive it. If it
   does, you'll get a Resume button — log back in, click Resume, and it continues from
   where it stopped without rewriting anything.

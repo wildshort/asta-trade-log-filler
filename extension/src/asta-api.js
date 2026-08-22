@@ -233,6 +233,41 @@ export class AstaClient {
     return json.Data.map((d) => [d.ScriptHeading || '', Number(d.NoOfTrades || 0)]);
   }
 
+  // Same grid read as existingViews(), but keeping SeqNo and PL -- the two
+  // fields existingViews() throws away, that a caller needing to identify a
+  // specific view (by SeqNo) or show its P&L requires.
+  // Deliberately a separate method rather than changing existingViews()'
+  // return shape: existingViews() is load-bearing for dedup on every normal
+  // run and its [heading, legCount] tuple shape is depended on by callers and
+  // tests untouched by this feature. Shares existingViews()' "throw, don't
+  // degrade to []" rule for the same reason -- see the comment above.
+  async listViewsDetailed() {
+    const body = new URLSearchParams({ sort: '', page: '1', pageSize: '1000', group: '', filter: '' });
+    const res = await this.#request(
+      '/TradeLog/ViewBuilder/ViewBuilderRead?IsPaperTrade=False&IsViewAll=False',
+      { method: 'POST', body });
+    let json = null;
+    try {
+      json = await res.json();
+    } catch {
+      json = null;
+    }
+    if (!json || !Array.isArray(json.Data)) {
+      throw new AstaError(
+        'Could not read the list of strategies in your ASTA journal. Nothing was deleted. ' +
+        'Open myasta.avadhutsathe.in, check you are logged in and that your Trade Log page ' +
+        'loads, then try again.',
+        { retryable: false });
+    }
+    return json.Data.map((d) => ({
+      seqNo: Number(d.SeqNo),
+      heading: d.ScriptHeading || '',
+      pl: Number(d.PL || 0),
+      trades: Number(d.NoOfTrades || 0),
+    }));
+  }
+
+
   // Port of asta_autofill.py:467-483 (create_view)
   async createView(acct, job, token) {
     const sp = Number(job.spot) || 100;
