@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="color-scheme" content="light dark">
+  <title>ASTA Trade-Log Filler</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="page">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <div class="brand-text">
+          <h1>ASTA Trade-Log Filler</h1>
+          <p class="subtitle">Reads your Zerodha tradebooks, writes matched round-trips into your ASTA journal.</p>
+        </div>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper" aria-label="Progress">
+      <li class="stepper-item" data-step="files" aria-current="step"><span class="stepper-num">1</span><span class="stepper-label">Files</span></li>
+      <li class="stepper-item" data-step="preview"><span class="stepper-num">2</span><span class="stepper-label">Preview</span></li>
+      <li class="stepper-item" data-step="write"><span class="stepper-num">3</span><span class="stepper-label">Write</span></li>
+      <li class="stepper-item" data-step="done"><span class="stepper-num">4</span><span class="stepper-label">Done</span></li>
+    </ol>
+
+    <main id="app">
+
+      <!-- STEP 1: FILES -->
+      <section id="step-files" class="panel" aria-labelledby="files-heading">
+        <h2 id="files-heading">Choose your Zerodha files</h2>
+        <p class="hint">
+          Zerodha Console &rarr; Reports &rarr; <strong>Tax P&amp;L</strong> and/or <strong>Tradebook</strong>
+          (F&amp;O and Commodity are separate downloads). Add as many as you have &mdash;
+          a Tax P&amp;L export is treated as settled through its last exit date, and any tradebook
+          is used to fill in whatever comes after. At least one recognised file is required.
+        </p>
+
+        <label class="file-field" for="sources">
+          <span class="file-field-label">Trade files</span>
+          <span class="file-drop" id="sources-drop">
+            <input type="file" id="sources" accept=".xlsx" multiple>
+            <span class="file-drop-text" id="sources-name">No files chosen</span>
+            <span class="file-drop-btn">Browse</span>
+          </span>
+        </label>
+
+        <div id="files-summary" class="files-summary" hidden>
+          <p class="files-summary-line" id="files-summary-line"></p>
+          <div id="unrecognised-files" class="files-unrecognised" hidden>
+            <p class="hint">Not recognised &mdash; these will be ignored:</p>
+            <div class="chip-list" id="unrecognised-chip-list"></div>
+          </div>
+          <div id="unusable-files" class="files-unrecognised" hidden>
+            <p class="hint">Could not be used:</p>
+            <ul class="failed-list" id="unusable-list"></ul>
+          </div>
+        </div>
+
+        <div class="settings-row">
+          <span class="settings-item"><span class="settings-key">Only counts trades after</span><span class="settings-val">01 Jan 2020</span></span>
+          <span class="settings-item"><span class="settings-key">Minor strategies filtered below</span><span class="settings-val">&#8377;10,000</span></span>
+        </div>
+
+        <div id="files-error" class="banner banner-error" hidden role="alert"></div>
+
+        <div class="actions">
+          <button id="preview" class="btn btn-primary" type="button" disabled>
+            <span class="btn-label">Preview</span>
+            <span class="spinner" hidden></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 2: PREVIEW -->
+      <section id="step-preview" class="panel" hidden aria-labelledby="preview-heading">
+        <h2 id="preview-heading">Check what will be written</h2>
+        <p class="hint">Nothing has touched your ASTA journal yet. Review every line below before writing.</p>
+
+        <div id="preview-error" class="banner banner-error" hidden role="alert"></div>
+
+        <div id="preview-body" hidden>
+          <p class="merge-note" id="merge-note" hidden></p>
+
+          <div class="summary-cards">
+            <div class="stat-card">
+              <span class="stat-label">Strategies</span>
+              <span class="stat-value" id="stat-count">0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Net P&amp;L</span>
+              <span class="stat-value" id="stat-pnl">&#8377;0</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Total legs</span>
+              <span class="stat-value" id="stat-legs">0</span>
+            </div>
+          </div>
+
+          <div class="strategy-list-wrap">
+            <table class="strategy-list" id="strategy-table">
+              <thead>
+                <tr><th>Strategy</th><th>Segment</th><th class="num">Legs</th><th class="num">P&amp;L</th></tr>
+              </thead>
+              <tbody id="strategy-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="issues" hidden>
+            <div class="issue-block" id="issue-skipped" hidden>
+              <h3>Could not parse <span class="issue-count" id="skipped-count"></span></h3>
+              <p class="hint">These symbols did not match a known F&amp;O/commodity contract pattern and were left out.</p>
+              <div class="chip-list" id="skipped-list"></div>
+            </div>
+            <div class="issue-block" id="issue-unmapped" hidden>
+              <h3>Not in ASTA's scrip list <span class="issue-count" id="unmapped-count"></span></h3>
+              <p class="hint">ASTA does not recognise these underlyings. Add them via "New scrip request" on the view form, then re-run.</p>
+              <div class="chip-list" id="unmapped-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions actions-split">
+          <button id="back-to-files" class="btn btn-ghost" type="button">&larr; Change files</button>
+          <button id="write" class="btn btn-primary btn-danger" type="button" disabled>
+            <span class="btn-label">Write to ASTA</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- STEP 3: WRITE -->
+      <section id="step-write" class="panel" hidden aria-labelledby="write-heading">
+        <h2 id="write-heading">Writing to your journal</h2>
+        <p class="hint">Keep this tab open. It is safe to close and resume later &mdash; already-written strategies are skipped automatically.</p>
+
+        <div class="progress-wrap">
+          <progress id="bar" value="0" max="1"></progress>
+          <span class="progress-count" id="progress-count">0 / 0</span>
+        </div>
+
+        <div id="session-expired" class="banner banner-warn" hidden role="alert">
+          <p id="session-expired-text"></p>
+          <div class="banner-actions">
+            <a href="https://myasta.avadhutsathe.in" target="_blank" rel="noopener" class="btn btn-secondary btn-sm">Open ASTA login</a>
+            <button id="resume" class="btn btn-primary btn-sm" type="button">Resume</button>
+          </div>
+        </div>
+
+        <ul class="run-log" id="log"></ul>
+      </section>
+
+      <!-- STEP 4: DONE -->
+      <section id="step-done" class="panel" hidden aria-labelledby="done-heading">
+        <h2 id="done-heading">Run complete</h2>
+
+        <div class="summary-cards">
+          <div class="stat-card stat-good">
+            <span class="stat-label">Written</span>
+            <span class="stat-value" id="done-written">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Skipped</span>
+            <span class="stat-value" id="done-skipped">0</span>
+          </div>
+          <div class="stat-card stat-warn" id="done-partial-card" hidden>
+            <span class="stat-label">Needs checking</span>
+            <span class="stat-value" id="done-partial">0</span>
+          </div>
+          <div class="stat-card stat-bad" id="done-failed-card" hidden>
+            <span class="stat-label">Not written</span>
+            <span class="stat-value" id="done-failed">0</span>
+          </div>
+        </div>
+
+        <div id="partial-list-wrap" class="banner banner-warn" hidden role="alert">
+          <h3>Check these in ASTA before doing anything else</h3>
+          <p class="hint">These strategies were <strong>partly written</strong>. Their legs are already in
+            your journal, but not all of their exits are &mdash; so they show as open positions with no
+            profit or loss, and your totals will look wrong until they are dealt with. Open each one in
+            ASTA and either complete or delete it. Clicking Preview again will <em>not</em> repair them
+            on its own.</p>
+          <ul class="failed-list" id="partial-list"></ul>
+        </div>
+
+        <div id="failed-list-wrap" hidden>
+          <h3>Not written</h3>
+          <p class="hint">Nothing reached your journal for these, so there is nothing to clean up.</p>
+          <ul class="failed-list" id="failed-list"></ul>
+          <p class="hint">Fix the cause above (commonly an expired session), then click Preview again &mdash;
+            already-written strategies are skipped and only the remainder is retried.</p>
+        </div>
+
+        <div class="actions">
+          <button id="restart" class="btn btn-secondary" type="button">Start another run</button>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="app-footer">
+      <p>Reads local files only. Nothing leaves your browser except requests to myasta.avadhutsathe.in.</p>
+    </footer>
+  </div>
+
+  <script src="../vendor/xlsx.full.min.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "ASTA Trade-Log Filler",
+  "version": "0.1.0",
+  "description": "Fills your ASTA trade log from your own Zerodha tradebook exports.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://myasta.avadhutsathe.in/*"],
+  "action": { "default_title": "ASTA Trade-Log Filler" },
+  "background": { "service_worker": "src/background.js", "type": "module" }
+}

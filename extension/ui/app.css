@@ -1,0 +1,668 @@
+/* ASTA Trade-Log Filler — a calm instrument, not a form.
+   The user is about to write real numbers into a live trading journal;
+   nothing here should feel casual or rushed. */
+
+:root {
+  --bg: #f6f5f2;
+  --bg-raised: #ffffff;
+  --bg-sunken: #edeae4;
+  --ink: #1c1b19;
+  --ink-soft: #57534a;
+  --ink-faint: #948e80;
+  --border: #ddd8cd;
+  --border-strong: #c7c0b1;
+
+  --accent: #2f5d50;       /* deep teal — the brand's calm anchor */
+  --accent-ink: #f4f7f5;
+  --accent-soft: #e4ede9;
+
+  --danger: #8a3324;       /* muted brick — for the one irreversible action */
+  --danger-ink: #fbf3f0;
+  --danger-soft: #f2e3de;
+
+  --warn: #93650f;
+  --warn-soft: #f7ecd6;
+  --warn-border: #e3cb92;
+
+  --good: #2f5d3f;
+  --good-soft: #e4ede7;
+
+  --bad: #8a3324;
+  --bad-soft: #f2e3de;
+
+  --mono: "SF Mono", "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Helvetica, Arial, sans-serif;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(28, 27, 25, 0.04), 0 6px 20px rgba(28, 27, 25, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17181a;
+    --bg-raised: #1f2123;
+    --bg-sunken: #131415;
+    --ink: #eeece6;
+    --ink-soft: #ada79a;
+    --ink-faint: #736e63;
+    --border: #302f2c;
+    --border-strong: #3d3b36;
+
+    --accent: #6fae9b;
+    --accent-ink: #0c1512;
+    --accent-soft: #1c2b26;
+
+    --danger: #c97c68;
+    --danger-ink: #1c1210;
+    --danger-soft: #2c1e19;
+
+    --warn: #d9ac52;
+    --warn-soft: #2b2415;
+    --warn-border: #4a3c1e;
+
+    --good: #7bbd93;
+    --good-soft: #182620;
+
+    --bad: #c97c68;
+    --bad-soft: #2c1e19;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 24px 64px;
+}
+
+/* ---------- Header ---------- */
+
+.app-header { margin-bottom: 28px; }
+
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: 17px;
+  font-family: var(--mono);
+}
+
+.brand-text h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 3px 0 0;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+}
+
+/* ---------- Stepper ---------- */
+
+.stepper {
+  display: flex;
+  list-style: none;
+  margin: 0 0 32px;
+  padding: 0;
+  gap: 0;
+}
+
+.stepper-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  color: var(--ink-faint);
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+}
+
+.stepper-item:not(:last-child)::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+  margin: 0 10px;
+}
+
+.stepper-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  flex: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.stepper-item[aria-current="step"] { color: var(--ink); }
+.stepper-item[aria-current="step"] .stepper-num {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.stepper-item.done { color: var(--ink-soft); }
+.stepper-item.done .stepper-num {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ---------- Panels ---------- */
+
+.panel {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.hint {
+  margin: 0 0 20px;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+/* ---------- File inputs ---------- */
+
+.file-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+
+.file-field-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.file-drop {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+  padding: 12px 14px;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.file-drop:hover { border-color: var(--accent); }
+
+.file-drop.has-file {
+  border-style: solid;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.file-drop input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.file-drop-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--ink-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-drop.has-file .file-drop-text { color: var(--ink); font-weight: 500; }
+
+.file-drop-btn {
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  padding: 4px 10px;
+  border-radius: 5px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+}
+
+/* Neutral container -- it can hold a positive summary line, a list of
+   ignored files, or both, so it doesn't lean toward either "good" or "bad"
+   coloring the way accent/warn would. */
+.files-summary {
+  margin: -6px 0 20px;
+  padding: 12px 14px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+}
+
+.files-summary-line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.files-unrecognised {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.files-unrecognised .hint { margin: 0 0 2px; }
+
+.settings-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+}
+
+.settings-item { display: flex; gap: 6px; align-items: baseline; }
+.settings-key { color: var(--ink-faint); }
+.settings-val { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+
+/* ---------- Buttons ---------- */
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.actions-split { justify-content: space-between; align-items: center; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s, transform 0.05s;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.btn-primary:not(:disabled):hover { filter: brightness(1.06); }
+
+.btn-primary.btn-danger {
+  background: var(--danger);
+  color: var(--danger-ink);
+}
+
+.btn-secondary {
+  background: var(--bg-sunken);
+  border-color: var(--border-strong);
+  color: var(--ink);
+}
+.btn-secondary:not(:disabled):hover { border-color: var(--accent); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: transparent;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+.btn-ghost:hover { color: var(--ink); }
+
+.btn-sm { padding: 7px 12px; font-size: 12.5px; }
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: currentColor;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Banners ---------- */
+
+.banner {
+  border-radius: var(--radius-sm);
+  padding: 13px 15px;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 18px;
+  white-space: pre-line;
+}
+
+.banner-error {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+.banner-warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+  border: 1px solid var(--warn-border);
+}
+
+/* The partly-written callout is a warning banner that carries a heading and a
+   list, unlike the session-expiry banner which is a single paragraph. */
+#partial-list-wrap h3 {
+  margin: 0 0 6px;
+  font-size: 13.5px;
+}
+#partial-list-wrap .hint { color: inherit; }
+#partial-list-wrap .failed-list {
+  margin-top: 10px;
+  margin-bottom: 0;
+  background: var(--bg-raised);
+  border-color: var(--warn-border);
+}
+#partial-list-wrap .failed-list .fail-msg { color: var(--ink-soft); }
+#partial-list-wrap .failed-list .fail-heading { color: var(--ink); }
+
+.banner-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ---------- Preview summary ---------- */
+
+.merge-note {
+  margin: 0 0 16px;
+  padding: 10px 13px;
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.merge-note strong { color: var(--ink); font-family: var(--mono); font-weight: 600; }
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: var(--bg-sunken);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+.stat-value {
+  font-family: var(--mono);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.stat-good .stat-value { color: var(--good); }
+.stat-bad .stat-value { color: var(--bad); }
+/* Partly-written strategies: not a clean failure, not a success -- something
+   is sitting half-finished in a live journal and needs a person to look. */
+.stat-warn .stat-value { color: var(--warn); }
+
+.strategy-list-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 8px;
+}
+
+table.strategy-list {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.strategy-list thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-sunken);
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.strategy-list td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.strategy-list tbody tr:last-child td { border-bottom: none; }
+.strategy-list tbody tr:hover { background: var(--bg-sunken); }
+
+.strategy-list th.num, .strategy-list td.num {
+  text-align: right;
+  font-family: var(--mono);
+}
+
+.pnl-pos { color: var(--good); }
+.pnl-neg { color: var(--bad); }
+
+.segment-tag {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* ---------- Issues ---------- */
+
+.issue-block {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.issue-block h3 {
+  margin: 0 0 4px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.issue-count {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--warn);
+}
+
+.chip-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.chip {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  background: var(--warn-soft);
+  color: var(--warn);
+  border: 1px solid var(--warn-border);
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+
+/* ---------- Write progress ---------- */
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+progress {
+  flex: 1;
+  height: 8px;
+  appearance: none;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+}
+progress::-webkit-progress-bar { background: var(--bg-sunken); border-radius: 8px; }
+progress::-webkit-progress-value { background: var(--accent); border-radius: 8px; transition: width 0.2s; }
+
+.progress-count {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  flex: none;
+}
+
+.run-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.run-log li {
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  font-family: var(--mono);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.run-log li:last-child { border-bottom: none; }
+
+.run-log .log-status {
+  flex: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+}
+
+.log-status-written { color: var(--good); }
+.log-status-skipped, .log-status-skipped-duplicate { color: var(--ink-faint); }
+.log-status-failed { color: var(--bad); }
+.log-status-failed-partial { color: var(--warn); }
+
+/* ---------- Done ---------- */
+
+.failed-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.failed-list li {
+  padding: 10px 13px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.failed-list li:last-child { border-bottom: none; }
+
+.failed-list .fail-heading {
+  font-weight: 600;
+  font-family: var(--mono);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.failed-list .fail-msg {
+  color: var(--ink-soft);
+  white-space: pre-line;
+}
+
+/* ---------- Footer ---------- */
+
+.app-footer {
+  margin-top: 28px;
+  text-align: center;
+}
+.app-footer p {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--ink-faint);
+}
+
+[hidden] { display: none !important; }
