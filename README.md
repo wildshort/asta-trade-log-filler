@@ -46,9 +46,21 @@ The extension works out which file is which and handles the cutover itself.
 
 ---
 
+## Before you run it — log in to ASTA
+
+**Open `myasta.avadhutsathe.in` in a tab and log in. Leave that tab open while the
+extension runs.**
+
+The extension has no password of its own — it works through the session you are already
+logged into, which is why it never asks you for one. If you are not logged in, or that tab
+is closed, it cannot reach ASTA and will stop.
+
+Keep it in a **separate tab in the same Chrome window**. The extension opens in its own
+tab; both need to be open at the same time.
+
 ## Using it
 
-1. Log in to `myasta.avadhutsathe.in` in the same browser. Leave the tab open.
+1. Log in to ASTA (above) and leave that tab open.
 2. Click the extension icon.
 3. Select all your downloaded files at once.
 4. **Preview** — check the strategy count and net P&L before writing anything.
